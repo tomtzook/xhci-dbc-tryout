@@ -107,6 +107,11 @@ int xdbc_init(xdbc_context* context) {
 
     // fill data table with context information
 
+    // reset structures
+    xdbc_ring_reset(&context->evt_ring);
+    xdbc_ring_reset(&context->out_ring);
+    xdbc_ring_reset(&context->in_ring);
+
     // start dbc
 
 clean:
