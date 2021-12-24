@@ -2,6 +2,9 @@
 
 #include <definition.h>
 
+
+#define XHCI_TRBS_PER_PAGE	256
+
 #pragma pack(push, 1)
 
 typedef struct {
