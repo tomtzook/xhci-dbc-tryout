@@ -1,8 +1,9 @@
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
-#include <string.h>
+#include <stdint.h> // for some types
+#include <stddef.h> // for some macros
+#include <string.h> // for memory
+#include <sys/io.h> // for port access
 
 // write fence
 #define wmb()

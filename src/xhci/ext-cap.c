@@ -5,9 +5,9 @@
 int xhci_find_next_ext_cap(const volatile void* mmio_base, uint32_t id, size_t* offset) {
     const volatile xhci_hccparams1_register_t* reg =
             (const volatile xhci_hccparams1_register_t*) (mmio_base + XHCI_HCCPARAMS1_OFFSET);
-    uint32_t reg_offset = reg->xecp << 2;
+    uint32_t reg_offset = (uint32_t)(reg->xecp) << 2;
     if (!reg_offset) {
-        return 1; // error: no caps
+        return ERROR_NOT_FOUND;
     }
 
     uint32_t next;
@@ -20,8 +20,8 @@ int xhci_find_next_ext_cap(const volatile void* mmio_base, uint32_t id, size_t* 
         }
 
         next = extcap_reg->next_extcap_ptr;
-        reg_offset += next << 2;
+        reg_offset += (next << 2);
     } while (next);
 
-    return 1; // error: not found
+    return ERROR_NOT_FOUND;
 }
