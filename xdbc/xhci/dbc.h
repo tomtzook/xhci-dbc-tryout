@@ -127,6 +127,18 @@ typedef struct {
     uint32_t reserved3[11];
 } xhci_dbc_endpoint_context_t;
 
+typedef struct {
+    xhci_dbc_info_context_t info;
+    xhci_dbc_endpoint_context_t out;
+    xhci_dbc_endpoint_context_t in;
+} xhci_dbc_context_t;
+
+typedef struct {
+    uint64_t base;
+    uint16_t size;
+    uint8_t reserved0[6];
+} xue_erst_segment;
+
 #pragma pack(pop)
 
 typedef enum {
@@ -134,6 +146,11 @@ typedef enum {
     DBC_DOORBELL_EP_IN = 1,
 } xhci_dbc_doorbell_t;
 
+typedef enum {
+    DBC_EP_BULK_OUT = 2,
+    DBC_EP_BULK_IN = 6
+} xhci_dbc_ep_t;
 
-int xhci_enable_dbc(xhci_dbc_register_t* reg);
-int xhci_disable_dbc(xhci_dbc_register_t* reg);
+
+int xhci_enable_dbc(volatile xhci_dbc_register_t* reg);
+int xhci_disable_dbc(volatile xhci_dbc_register_t* reg);

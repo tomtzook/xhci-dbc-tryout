@@ -82,29 +82,19 @@ typedef enum {
     TRB_TYPE_LINK = 6,
 } xhci_trb_type_t;
 
-typedef struct {
-    xhci_trb_t* ptr;
-} xhci_ring_ptr_t;
-
-typedef struct {
-    xhci_ring_ptr_t enqueue;
-    xhci_ring_ptr_t dequeue;
-
-    uint32_t cycle_bit;
-} xhci_ring_t;
-
 // we'll use a single-segment, static-sized ring
 // no support for dynamic extending and such for now
 typedef struct {
-    xhci_ring_t ring;
-    void* segment_base;
-    size_t segment_pages_count;
-} xhci_producer_ring_t;
+    xhci_trb_t* enqueue;
+    xhci_trb_t* dequeue;
 
-int xhci_ring_advance(xhci_ring_t* ring, xhci_ring_ptr_t* ptr);
-int xhci_ring_enqueue(xhci_ring_t* ring, xhci_trb_t* trb);
-int xhci_ring_dequeue(xhci_ring_t* ring, xhci_trb_t* trb);
+    uint32_t cycle_bit;
 
-int xhci_ring_alloc(xhci_producer_ring_t* ring, size_t pages_count);
-void xhci_ring_free(xhci_producer_ring_t* ring);
-void xhci_ring_reset(xhci_producer_ring_t* ring);
+    void* base;
+    size_t size;
+} xhci_ring_t;
+
+void xhci_ring_reset(xhci_ring_t* ring);
+void xhci_ring_advance(xhci_ring_t* ring, xhci_trb_t** ptr);
+void xhci_ring_enqueue(xhci_ring_t* ring, xhci_trb_t* trb);
+void xhci_ring_dequeue(xhci_ring_t* ring, xhci_trb_t* trb);

@@ -6,7 +6,14 @@
 
 
 typedef struct {
+    xhci_dbc_context_t dbc_ctx;
+    xue_erst_segment erst_segment;
 
+    char info_strs[PAGE_SIZE];
+
+    char event_ring_data[PAGE_SIZE];
+    char in_ring_data[PAGE_SIZE];
+    char out_ring_data[PAGE_SIZE];
 } xdbc_data_table;
 
 typedef struct {
@@ -18,13 +25,9 @@ typedef struct {
 
     xdbc_data_table* data_table;
 
-    xhci_dbc_info_context_t info;
-    xhci_dbc_endpoint_context_t out;
-    xhci_dbc_endpoint_context_t in;
-
-    xhci_producer_ring_t evt_ring;
-    xhci_producer_ring_t out_ring;
-    xhci_producer_ring_t in_ring;
+    xhci_ring_t evt_ring;
+    xhci_ring_t out_ring;
+    xhci_ring_t in_ring;
 } xdbc_context;
 
 
