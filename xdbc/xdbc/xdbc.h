@@ -1,8 +1,8 @@
 #pragma once
 
-#include <definition.h>
-#include <xhci/dbc.h>
-#include "xdbc-ring.h"
+#include "definitions.h"
+#include "xhci/dbc.h"
+#include "xhci/ring.h"
 
 
 typedef struct {
@@ -10,13 +10,21 @@ typedef struct {
 } xdbc_data_table;
 
 typedef struct {
+    uint32_t bus;
+    uint32_t dev;
+    uint32_t func;
+
     volatile xhci_dbc_register_t* dbc_register;
 
     xdbc_data_table* data_table;
 
-    xdbc_ring_t evt_ring;
-    xdbc_ring_t out_ring;
-    xdbc_ring_t in_ring;
+    xhci_dbc_info_context_t info;
+    xhci_dbc_endpoint_context_t out;
+    xhci_dbc_endpoint_context_t in;
+
+    xhci_producer_ring_t evt_ring;
+    xhci_producer_ring_t out_ring;
+    xhci_producer_ring_t in_ring;
 } xdbc_context;
 
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <definition.h>
+#include <definitions.h>
 
 
 #define XHCI_TRBS_PER_PAGE	256
@@ -93,7 +93,18 @@ typedef struct {
     uint32_t cycle_bit;
 } xhci_ring_t;
 
-int xhci_ring_advance(xhci_ring_t* ring, xhci_ring_ptr_t* ptr);
+// we'll use a single-segment, static-sized ring
+// no support for dynamic extending and such for now
+typedef struct {
+    xhci_ring_t ring;
+    void* segment_base;
+    size_t segment_pages_count;
+} xhci_producer_ring_t;
 
+int xhci_ring_advance(xhci_ring_t* ring, xhci_ring_ptr_t* ptr);
 int xhci_ring_enqueue(xhci_ring_t* ring, xhci_trb_t* trb);
 int xhci_ring_dequeue(xhci_ring_t* ring, xhci_trb_t* trb);
+
+int xhci_ring_alloc(xhci_producer_ring_t* ring, size_t pages_count);
+void xhci_ring_free(xhci_producer_ring_t* ring);
+void xhci_ring_reset(xhci_producer_ring_t* ring);

@@ -1,7 +1,8 @@
-#include <error_handling.h>
-#include <hw/pci.h>
-#include <xhci/ext-cap.h>
-#include <xdbc/xdbc.h>
+#include "error_handling.h"
+#include "hw/pci.h"
+#include "xhci/ext-cap.h"
+#include "utils.h"
+#include "xdbc/xdbc.h"
 
 // https://elixir.bootlin.com/linux/latest/source/drivers/usb/early/xhci-dbc.h#L74
 // https://elixir.bootlin.com/linux/latest/source/drivers/usb/early/xhci-dbc.c
@@ -9,21 +10,6 @@
 // allocate a single page for the data table. should be enough for now
 #define DATA_TABLE_PAGE_COUNT (1)
 
-static int wait_for_set(volatile void* ptr, uint32_t mask, uint32_t done, size_t wait_time_usec, size_t delay_time_usec) {
-    // wait until a set of bits are set to a specific value
-
-    do {
-        uint32_t value = *(volatile uint32_t*)ptr;
-        if ((value & mask) == done) {
-            return ERROR_SUCCESS;
-        }
-
-        env_sleep_usec(delay_time_usec);
-        wait_time_usec -= delay_time_usec;
-    } while (wait_time_usec > 0);
-
-    return ERROR_TIMEOUT;
-}
 
 static int map_xhci_mmio(uint32_t bus, uint32_t device, uint32_t func, volatile void** mmio_base, size_t* mmio_size) {
     // check if the device can work with mmio space. If not, enable it to do so.
@@ -80,15 +66,13 @@ int xdbc_init(xdbc_context* context) {
 
     // find controller bus
     // iterate over the pci bus devices until the xhc controller is found
-    uint32_t bus = 0;
-    uint32_t dev = 0;
-    uint32_t func = 0;
+    GOTO_CLEAN_ON_ERROR(pci_find_class(PCI_CLASS_SERIAL_USB_XHCI, &context->bus, &context->dev, &context->func));
 
     // map mmio regs
     // read info from pci bus regarding the location of mmio
     volatile void* mmio_base = NULL;
     size_t mmio_size;
-    GOTO_CLEAN_ON_ERROR(map_xhci_mmio(bus, dev, func, &mmio_base, &mmio_size));
+    GOTO_CLEAN_ON_ERROR(map_xhci_mmio(context->bus, context->dev, context->func, &mmio_base, &mmio_size));
 
     // find extcap regs
     size_t regs_offset;
@@ -99,26 +83,36 @@ int xdbc_init(xdbc_context* context) {
     context->data_table = env_allocate_pages(DATA_TABLE_PAGE_COUNT);
     GOTO_CLEAN_ON_ERROR(NULL == context->data_table ? ERROR_MEMORY_ALLOCATION : ERROR_SUCCESS);
 
-    GOTO_CLEAN_ON_ERROR(xdbc_ring_alloc(&context->evt_ring, 1));
-    GOTO_CLEAN_ON_ERROR(xdbc_ring_alloc(&context->out_ring, 1));
-    GOTO_CLEAN_ON_ERROR(xdbc_ring_alloc(&context->in_ring, 1));
+    GOTO_CLEAN_ON_ERROR(xhci_ring_alloc(&context->evt_ring, 1));
+    GOTO_CLEAN_ON_ERROR(xhci_ring_alloc(&context->out_ring, 1));
+    GOTO_CLEAN_ON_ERROR(xhci_ring_alloc(&context->in_ring, 1));
 
     // enable dbc?
+    wmb();
+    context->dbc_register->dcctrl.bits.dce = 1;
+    wmb();
+    GOTO_CLEAN_ON_ERROR(wait_for_set(&context->dbc_register->dcctrl, DBC_DCCTRL_DCE_BIT, 1));
+
+    wmb();
+    context->dbc_register->dcportsc.ped = 1;
+    wmb();
+
+    GOTO_CLEAN_ON_ERROR(wait_for_set(&context->dbc_register->dcctrl, DBC_DCCTRL_DCR_BIT, 1));
 
     // fill data table with context information
 
     // reset structures
-    xdbc_ring_reset(&context->evt_ring);
-    xdbc_ring_reset(&context->out_ring);
-    xdbc_ring_reset(&context->in_ring);
+    xhci_ring_reset(&context->evt_ring);
+    xhci_ring_reset(&context->out_ring);
+    xhci_ring_reset(&context->in_ring);
 
     // start dbc
 
 clean:
     env_free_pages(context->data_table, DATA_TABLE_PAGE_COUNT);
-    xdbc_ring_free(&context->evt_ring);
-    xdbc_ring_free(&context->out_ring);
-    xdbc_ring_free(&context->in_ring);
+    xhci_ring_free(&context->evt_ring);
+    xhci_ring_free(&context->out_ring);
+    xhci_ring_free(&context->in_ring);
 
     return status;
 }

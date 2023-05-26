@@ -1,6 +1,6 @@
 #pragma once
 
-#include <definition.h>
+#include <definitions.h>
 #include <hw/environment.h>
 #include <xhci/ring.h>
 
@@ -35,6 +35,7 @@ typedef struct {
     volatile union {
         volatile struct {
             uint32_t dbc_run : 1;
+#define DBC_DCCTRL_DCR_BIT BIT(0)
             uint32_t lse : 1;
             uint32_t hot : 1;
             uint32_t hit : 1;
@@ -126,15 +127,13 @@ typedef struct {
     uint32_t reserved3[11];
 } xhci_dbc_endpoint_context_t;
 
-typedef struct {
-    xhci_dbc_info_context_t info;
-    xhci_dbc_endpoint_context_t out;
-    xhci_dbc_endpoint_context_t in;
-} xhci_dbc_context_t;
-
 #pragma pack(pop)
 
 typedef enum {
     DBC_DOORBELL_EP_OUT = 0,
     DBC_DOORBELL_EP_IN = 1,
 } xhci_dbc_doorbell_t;
+
+
+int xhci_enable_dbc(xhci_dbc_register_t* reg);
+int xhci_disable_dbc(xhci_dbc_register_t* reg);

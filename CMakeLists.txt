@@ -4,13 +4,10 @@ project(xhci C)
 set(CMAKE_C_STANDARD 11)
 
 include_directories(include)
+include_directories(xdbc)
 
-add_library(xhci
-        src/xhci/ring.c
-        src/xdbc/xdbc.c
-        src/xdbc/xdbc-ring.c
-        src/xhci/ext-cap.c
-        src/hw/pci.c)
-
-add_executable(test main.c)
-target_link_libraries(test xhci)
+add_library(xhci STATIC
+        xdbc/xhci/ring.c
+        xdbc/xdbc/xdbc.c
+        xdbc/xhci/ext-cap.c
+        xdbc/hw/pci.c xdbc/utils.c xdbc/xhci/dbc.c)

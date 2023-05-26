@@ -1,6 +1,6 @@
 #pragma once
 
-#include <definition.h>
+#include <definitions.h>
 
 // defines a set of functions which the platform needs to provide
 // by replacing the implementation, different platforms can use this

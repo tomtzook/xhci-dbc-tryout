@@ -1,6 +1,6 @@
 #pragma once
 
-#include <definition.h>
+#include <definitions.h>
 
 
 #define XHCI_HCCPARAMS1_OFFSET (0x10)

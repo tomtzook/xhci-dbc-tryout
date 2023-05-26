@@ -1,11 +1,19 @@
 #pragma once
 
-#include <definition.h>
+#include <definitions.h>
 
 #define PCI_BASE_ADDRESS_0 (0x10)
 #define PCI_COMMAND (0x4)
+#define PCI_CLASS_REVISION 0x08
 
 #define PCI_BAR_MEM_ADDRESS_SHIFT (16)
+
+#define PCI_MAX_BUSES 256
+#define PCI_MAX_DEVICES 32
+#define PCI_MAX_FUNCTIONS 8
+
+#define PCI_CLASS_SERIAL_USB_XHCI 0x0c0330
+
 
 typedef union {
     struct {
@@ -39,3 +47,5 @@ uint8_t pci_read_config8(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset
 void pci_write_config32(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint32_t value);
 void pci_write_config16(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint16_t value);
 void pci_write_config8(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint8_t value);
+
+int pci_find_class(uint32_t wanted_class, uint32_t* bus_out, uint32_t* device_out, uint32_t* func_out);
